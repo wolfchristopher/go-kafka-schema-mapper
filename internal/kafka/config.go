@@ -7,6 +7,11 @@ import (
 func MapSchema(data map[string]interface{}) map[string]interface{} {
 	schema := make(map[string]interface{})
 	for key, value := range data {
+		// Check for nil values before using reflect.TypeOf
+		if value == nil {
+			schema[key] = "<nil>"
+			continue
+		}
 		// Store the type of each field
 		schema[key] = reflect.TypeOf(value).String()
 
