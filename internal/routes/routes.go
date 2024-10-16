@@ -50,6 +50,7 @@ func ReceiveSchemaHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&schema)
 	if err != nil {
+		log.Printf("Failed to decode JSON response: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -58,9 +59,13 @@ func ReceiveSchemaHandler(w http.ResponseWriter, r *http.Request) {
 
 	schema = kafka.MapSchema(schema)
 
+	log.Printf("Schema Mapped: %+v\n", schema)
+
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(map[string]string{"message": "Schema received successfully"})
 	if err != nil {
+		log.Printf("Failed to encode JSON response: %v", err)
+		http.Error(w, "Failed to send the response", http.StatusInternalServerError)
 		return
 	}
 }
