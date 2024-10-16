@@ -1,0 +1,13 @@
+Proprietary License
+
+Copyright (c) 2024 Christopher Wolf. All rights reserved.
+
+This software and associated documentation files (the "Software") are the property of Christopher Wolf. The use, distribution, and modification of this software are strictly prohibited unless prior written permission is granted by Christopher Wolf.
+
+The following conditions apply:
+1. The Software may not be distributed, sold, licensed, sublicensed, rented, leased, or otherwise transferred, in whole or in part, to any third party without the express prior written permission of Christopher Wolf.
+2. The Software is provided "AS IS", without any warranties of any kind, including but not limited to merchantability, fitness for a particular purpose, or non-infringement. Christopher Wolf shall not be liable for any damages, whether direct, indirect, incidental, or consequential, arising from the use of the Software.
+3. Any unauthorized use, reproduction, or distribution of the Software is subject to civil and criminal penalties, and will be prosecuted to the maximum extent possible under the law.
+
+For any permissions, contact: wolfchristopher@outlook.com
+

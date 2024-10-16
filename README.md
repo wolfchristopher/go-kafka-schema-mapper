@@ -1,4 +1,8 @@
 # thoth
+Copyright (c) 2024 Christopher Wolf. All rights reserved.
+This software is proprietary and confidential.
+Unauthorized copying of this file, via any medium, is strictly prohibited.
+
 Add Kafka config handler for the "/config" endpoint
 ```
 curl -X POST http://localhost:8080/kafka_config -H "Content-Type: application/json" 
