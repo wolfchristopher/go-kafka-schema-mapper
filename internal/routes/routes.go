@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/wolfchristopher/thoth/internal/kafka"
 	"log"
 	"net/http"
 )
@@ -54,6 +55,8 @@ func ReceiveSchemaHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Received schema: %+v\n", schema)
+
+	schema = kafka.MapSchema(schema)
 
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(map[string]string{"message": "Schema received successfully"})
