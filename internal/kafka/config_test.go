@@ -72,7 +72,7 @@ func TestJSONToMap(t *testing.T) {
 	})
 
 	t.Run("Given invalid JSON, it should return an error", func(t *testing.T) {
-		data := []byte(`{name: Alice, age: 25}`) // Invalid JSON
+		data := []byte(`{name: Alice, age: 25}`)
 		_, err := JSONToMap(data)
 		if err == nil {
 			t.Fatal("Expected an error, but got none")
@@ -144,7 +144,7 @@ func TestParseMessage(t *testing.T) {
 	})
 
 	t.Run("Given an unknown message format, it should return an error", func(t *testing.T) {
-		data := []byte(`name: Alice, age: 25`) // Neither JSON nor XML
+		data := []byte(`name: Alice, age: 25`)
 		_, err := ParseMessage(data)
 		if err == nil {
 			t.Fatal("Expected an error, but got none")

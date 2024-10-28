@@ -32,7 +32,7 @@ func (m *MockKafkaWriter) Close() error {
 // MockGenerateTransaction returns a static transaction with the ID "mock-id".
 func MockGenerateTransaction() models.Transaction {
 	return models.Transaction{
-		ID:        "mock-id", // Static ID for testing
+		ID:        "mock-id",
 		Timestamp: "2024-10-27T12:34:56",
 		Amount:    99.99,
 		Currency:  "USD",
@@ -61,7 +61,7 @@ func TestKafkaProducer(t *testing.T) {
 	})
 
 	t.Run("Should send correctly formatted XML messages", func(t *testing.T) {
-		mockWriter.Messages = nil // Reset messages
+		mockWriter.Messages = nil
 
 		StartKafkaProducer(mockWriter, MockGenerateTransaction)
 
@@ -72,7 +72,6 @@ func TestKafkaProducer(t *testing.T) {
 				t.Fatalf("Failed to unmarshal XML: %v", err)
 			}
 
-			// Ensure the transaction ID matches the mock
 			if transaction.ID != "mock-id" {
 				t.Fatalf("Expected transaction ID 'mock-id', but got '%s'", transaction.ID)
 			}
@@ -80,7 +79,7 @@ func TestKafkaProducer(t *testing.T) {
 	})
 
 	t.Run("Should capture all keys correctly", func(t *testing.T) {
-		mockWriter.Messages = nil // Reset messages
+		mockWriter.Messages = nil
 
 		StartKafkaProducer(mockWriter, MockGenerateTransaction)
 

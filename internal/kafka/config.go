@@ -38,7 +38,7 @@ func MapSchema(data map[string]interface{}) map[string]interface{} {
 func XmlToMap(reader io.Reader) (map[string]interface{}, error) {
 	decoder := xml.NewDecoder(reader)
 	var stack []map[string]interface{}
-	current := make(map[string]interface{}) // Ensure 'current' is initialized
+	current := make(map[string]interface{})
 
 	for {
 		token, err := decoder.Token()
@@ -51,26 +51,22 @@ func XmlToMap(reader io.Reader) (map[string]interface{}, error) {
 
 		switch tok := token.(type) {
 		case xml.StartElement:
-			element := make(map[string]interface{}) // Initialize new element map
+			element := make(map[string]interface{})
 			for _, attr := range tok.Attr {
-				element[attr.Name.Local] = attr.Value // Store attributes
+				element[attr.Name.Local] = attr.Value
 			}
 
-			// Push the current map onto the stack
 			stack = append(stack, current)
 
-			// Set the new current element
 			current = element
 
 		case xml.EndElement:
-			// Pop from the stack to get the parent element
 			if len(stack) == 0 {
-				return current, nil // Return the top-level element
+				return current, nil
 			}
 			parent := stack[len(stack)-1]
 			stack = stack[:len(stack)-1]
 
-			// Merge current into the parent
 			if existing, found := parent[tok.Name.Local]; found {
 				switch existing := existing.(type) {
 				case []interface{}:
@@ -82,13 +78,11 @@ func XmlToMap(reader io.Reader) (map[string]interface{}, error) {
 				parent[tok.Name.Local] = current
 			}
 
-			// Set the current element to the parent
 			current = parent
 
 		case xml.CharData:
 			content := string(tok)
 			if len(content) > 0 {
-				// Initialize map if needed and store text content
 				if current == nil {
 					current = make(map[string]interface{})
 				}
@@ -105,10 +99,8 @@ func ParseMessage(data []byte) (map[string]interface{}, error) {
 	trimmedData := strings.TrimSpace(string(data))
 
 	if strings.HasPrefix(trimmedData, "{") {
-		// JSON detected
 		return JSONToMap(data)
 	} else if strings.HasPrefix(trimmedData, "<") {
-		// XML detected
 		return XmlToMap(bytes.NewReader(data))
 	} else {
 		return nil, fmt.Errorf("unknown message format")

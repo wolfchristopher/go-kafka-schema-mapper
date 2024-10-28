@@ -9,32 +9,41 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/segmentio/kafka-go"
 	"github.com/wolfchristopher/thoth/models"
 	"log"
 	"math/rand"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
-// LocalKafkaWriter KafkaWriter defines the interface to mock Kafka writing.
-type LocalKafkaWriter interface {
+// KafkaWriter is the interface for Kafka message writing.
+type KafkaWriter interface {
 	WriteMessages(ctx context.Context, msgs ...kafka.Message) error
 	Close() error
 }
 
-// StartKafkaProducer generates and sends transactions to Kafka.
-func StartKafkaProducer(writer LocalKafkaWriter, generateTransaction func() models.Transaction) {
-	defer func() {
-		if err := writer.Close(); err != nil {
-			panic(err)
-		}
-	}()
+// LocalKafkaWriter wraps Kafka's writer to conform to the KafkaWriter interface.
+type LocalKafkaWriter struct {
+	Writer *kafka.Writer
+}
 
+// WriteMessages sends messages to Kafka.
+func (lw *LocalKafkaWriter) WriteMessages(ctx context.Context, msgs ...kafka.Message) error {
+	return lw.Writer.WriteMessages(ctx, msgs...)
+}
+
+// Close closes the Kafka writer.
+func (lw *LocalKafkaWriter) Close() error {
+	return lw.Writer.Close()
+}
+
+// StartKafkaProducer sends transactions to Kafka using the provided writer and generator function.
+func StartKafkaProducer(writer KafkaWriter, generateTransaction func() models.Transaction) {
 	for i := 0; i < 100; i++ {
-		// Use only the injected function to generate transactions
 		transaction := generateTransaction()
 
-		xmlData, err := xml.MarshalIndent(transaction, "  ", "    ")
+		xmlData, err := xml.MarshalIndent(transaction, "", "  ")
 		if err != nil {
 			log.Fatalf("Error marshaling XML: %v", err)
 		}
