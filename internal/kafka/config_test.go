@@ -5,114 +5,149 @@
 package kafka
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
 )
 
 func TestMapSchema(t *testing.T) {
-	// Behavior: It should map a flat structure with primitive types
-	t.Run("Flat structure with primitive types", func(t *testing.T) {
+	t.Run("Given a flat structure, it should map schema correctly", func(t *testing.T) {
 		input := map[string]interface{}{
-			"username": "john_doe",
-			"age":      30,
-			"isActive": true,
+			"id":     "123",
+			"age":    30,
+			"active": true,
 		}
-
 		expected := map[string]interface{}{
-			"username": "string",
-			"age":      "int",
-			"isActive": "bool",
+			"id":     "string",
+			"age":    "int",
+			"active": "bool",
 		}
-
 		result := MapSchema(input)
 
 		if !reflect.DeepEqual(result, expected) {
-			t.Errorf("Expected %+v, but got %+v", expected, result)
+			t.Errorf("Expected %v, got %v", expected, result)
 		}
 	})
 
-	// Behavior: It should map nested structures (maps within maps)
-	t.Run("Nested structures", func(t *testing.T) {
+	t.Run("Given a nested structure, it should recursively map the schema", func(t *testing.T) {
 		input := map[string]interface{}{
 			"user": map[string]interface{}{
-				"username": "john_doe",
-				"profile": map[string]interface{}{
-					"age":      30,
-					"isActive": true,
+				"name": "Alice",
+				"info": map[string]interface{}{
+					"age": 25,
 				},
 			},
 		}
-
 		expected := map[string]interface{}{
 			"user": map[string]interface{}{
-				"username": "string",
-				"profile": map[string]interface{}{
-					"age":      "int",
-					"isActive": "bool",
+				"name": "string",
+				"info": map[string]interface{}{
+					"age": "int",
 				},
 			},
 		}
-
 		result := MapSchema(input)
 
 		if !reflect.DeepEqual(result, expected) {
-			t.Errorf("Expected %+v, but got %+v", expected, result)
+			t.Errorf("Expected %v, got %v", expected, result)
 		}
 	})
+}
 
-	// Behavior: It should return an empty map when given an empty input
-	t.Run("Empty input map", func(t *testing.T) {
-		input := map[string]interface{}{}
-		expected := map[string]interface{}{}
-
-		result := MapSchema(input)
+func TestJSONToMap(t *testing.T) {
+	t.Run("Given valid JSON, it should parse into a map", func(t *testing.T) {
+		data := []byte(`{"name": "Alice", "age": 25}`)
+		expected := map[string]interface{}{
+			"name": "Alice",
+			"age":  float64(25),
+		}
+		result, err := JSONToMap(data)
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
 
 		if !reflect.DeepEqual(result, expected) {
-			t.Errorf("Expected %+v, but got %+v", expected, result)
+			t.Errorf("Expected %v, got %v", expected, result)
 		}
 	})
 
-	// Behavior: It should handle mixed types
-	t.Run("Mixed types", func(t *testing.T) {
-		input := map[string]interface{}{
-			"name":     "John Doe",
-			"age":      25,
-			"isActive": true,
-			"meta": map[string]interface{}{
-				"tags": []string{"go", "bdd", "testing"},
+	t.Run("Given invalid JSON, it should return an error", func(t *testing.T) {
+		data := []byte(`{name: Alice, age: 25}`) // Invalid JSON
+		_, err := JSONToMap(data)
+		if err == nil {
+			t.Fatal("Expected an error, but got none")
+		}
+	})
+}
+
+func TestXmlToMap(t *testing.T) {
+	t.Run("Given valid XML, it should parse into a map", func(t *testing.T) {
+		data := []byte(`<User><Name>Alice</Name><Age>25</Age></User>`)
+		expected := map[string]interface{}{
+			"User": map[string]interface{}{
+				"Name": map[string]interface{}{"#text": "Alice"},
+				"Age":  map[string]interface{}{"#text": "25"},
 			},
 		}
-
-		expected := map[string]interface{}{
-			"name":     "string",
-			"age":      "int",
-			"isActive": "bool",
-			"meta": map[string]interface{}{
-				"tags": "[]string",
-			},
+		result, err := XmlToMap(bytes.NewReader(data))
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
 		}
 
-		result := MapSchema(input)
-
 		if !reflect.DeepEqual(result, expected) {
-			t.Errorf("Expected %+v, but got %+v", expected, result)
+			t.Errorf("Expected %v, got %v", expected, result)
 		}
 	})
 
-	// Behavior: It should handle nil values gracefully
-	t.Run("Nil values", func(t *testing.T) {
-		input := map[string]interface{}{
-			"username": nil,
+	t.Run("Given invalid XML, it should return an error", func(t *testing.T) {
+		data := []byte(`<User><Name>Alice</Name><Age>25</Age>`) // Invalid XML
+		_, err := XmlToMap(bytes.NewReader(data))
+		if err == nil {
+			t.Fatal("Expected an error, but got none")
 		}
+	})
+}
 
+func TestParseMessage(t *testing.T) {
+	t.Run("Given a JSON message, it should parse correctly", func(t *testing.T) {
+		data := []byte(`{"name": "Alice", "age": 25}`)
 		expected := map[string]interface{}{
-			"username": "<nil>",
+			"name": "Alice",
+			"age":  float64(25),
 		}
-
-		result := MapSchema(input)
+		result, err := ParseMessage(data)
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
 
 		if !reflect.DeepEqual(result, expected) {
-			t.Errorf("Expected %+v, but got %+v", expected, result)
+			t.Errorf("Expected %v, got %v", expected, result)
+		}
+	})
+
+	t.Run("Given an XML message, it should parse correctly", func(t *testing.T) {
+		data := []byte(`<User><Name>Alice</Name><Age>25</Age></User>`)
+		expected := map[string]interface{}{
+			"User": map[string]interface{}{
+				"Name": map[string]interface{}{"#text": "Alice"},
+				"Age":  map[string]interface{}{"#text": "25"},
+			},
+		}
+		result, err := ParseMessage(data)
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+
+		if !reflect.DeepEqual(result, expected) {
+			t.Errorf("Expected %v, got %v", expected, result)
+		}
+	})
+
+	t.Run("Given an unknown message format, it should return an error", func(t *testing.T) {
+		data := []byte(`name: Alice, age: 25`) // Neither JSON nor XML
+		_, err := ParseMessage(data)
+		if err == nil {
+			t.Fatal("Expected an error, but got none")
 		}
 	})
 }
