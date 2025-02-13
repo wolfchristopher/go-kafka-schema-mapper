@@ -1,7 +1,3 @@
-// Copyright (c) 2024 Christopher Wolf. All rights reserved.
-// This software is proprietary and confidential.
-// Unauthorized copying of this file, via any medium, is strictly prohibited.
-
 package routes
 
 import (
